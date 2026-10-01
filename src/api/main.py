@@ -1,30 +1,39 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
-from src.agent import SupportAgent
 from src.api.schemas import AnalyzeRequest, AnalyzeResponse
+from src.api.service import AgentService
 
 
 app = FastAPI(
-    title="Hiver SDE Support Agent",
-    description="AI-powered customer support analysis system",
-    version="1.0.0"
+    title="Resolve AI",
+    description="AI-powered customer support resolution engine",
+    version="1.0.0",
 )
 
-
-print("Initializing Support Agent...")
-agent = SupportAgent()
+service = AgentService()
 
 
 @app.get("/health")
 def health():
     return {
-        "status": "ok"
+        "status": "ok",
+        "service": "resolve-ai"
     }
 
 
-@app.post("/analyze", response_model=AnalyzeResponse)
+@app.post(
+    "/analyze",
+    response_model=AnalyzeResponse
+)
 def analyze(request: AnalyzeRequest):
 
-    result = agent.analyze(request.message)
+    try:
+        return service.analyze(request.message)
 
-    return result
+    except Exception as e:
+        print(f"Agent error: {e}")
+
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to analyze the customer request."
+        )

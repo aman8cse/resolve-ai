@@ -1,7 +1,14 @@
+# Environment
 .venv/
 .env
+
+# Python
 __pycache__/
 *.pyc
+
+# Raw / derived datasets
+data/*.csv
+data/artifacts/
 
 # Large raw datasets
 data/twcs.csv

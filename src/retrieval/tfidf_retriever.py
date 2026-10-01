@@ -52,7 +52,7 @@ class TfidfRetriever:
 
             results.append({
                 "similarity": float(similarities[idx]),
-                "tweet_id": row["tweet_id_customer"],
+                "tweet_id": int(row["tweet_id_customer"]),
                 "customer": row["text_customer"],
                 "response": row["text_amazon"]
             })

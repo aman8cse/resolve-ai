@@ -1,5 +1,7 @@
+import time
+
 from src.models.train_classifier import IntentClassifier
-from src.retrieval.tfidf_retriever import TfidfRetriever
+from src.retrieval.faiss_retriever import FAISSRetriever
 from src.generation.response_generator import ResponseGenerator
 from src.decision.escalation import EscalationDecision
 
@@ -11,9 +13,7 @@ class SupportAgent:
         self.classifier = IntentClassifier()
 
         print("Loading historical retriever...")
-        self.retriever = TfidfRetriever(
-            "data/amazon_pairs.csv"
-        )
+        self.retriever = FAISSRetriever()
 
         print("Loading response generator...")
         self.generator = ResponseGenerator()
@@ -23,12 +23,24 @@ class SupportAgent:
 
     def analyze(self, message):
 
+        start = time.perf_counter()
+
+        classifier_start = time.perf_counter()
+
         intent = self.classifier.predict(message)
+
+        classifier_latency = time.perf_counter() - classifier_start
+
+        retrieval_start = time.perf_counter()
 
         cases = self.retriever.retrieve(
             message,
             k=5
         )
+
+        retrieval_latency = time.perf_counter() - retrieval_start
+
+        generation_start = time.perf_counter()
 
         reply = self.generator.generate(
             customer_message=message,
@@ -36,10 +48,18 @@ class SupportAgent:
             retrieved_cases=cases
         )
 
+        generation_latency = time.perf_counter() - generation_start
+
+        escalation_start = time.perf_counter()
+
         decision = self.escalation.decide(
             intent=intent,
             response=reply
         )
+
+        escalation_latency = time.perf_counter() - escalation_start
+
+        total_latency = time.perf_counter() - start
 
         return {
             "message": message,
@@ -48,6 +68,24 @@ class SupportAgent:
             "reply": reply,
             "decision": decision["decision"],
             "reason": decision["reason"],
+
+            "latency": {
+                "classifier_ms": round(
+                    classifier_latency * 1000, 2
+                ),
+                "retrieval_ms": round(
+                    retrieval_latency * 1000, 2
+                ),
+                "generation_ms": round(
+                    generation_latency * 1000, 2
+                ),
+                "escalation_ms": round(
+                    escalation_latency * 1000, 2
+                ),
+                "total_ms": round(
+                    total_latency * 1000, 2
+                )
+            }
         }
 
 
@@ -56,7 +94,7 @@ if __name__ == "__main__":
     agent = SupportAgent()
 
     result = agent.analyze(
-        "Someone hacked my amazon account."
+        "My package says delivered but I never received it."
     )
 
     print("\n==============================")
