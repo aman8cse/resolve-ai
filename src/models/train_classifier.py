@@ -46,10 +46,15 @@ class IntentClassifier:
         self.model.fit(X_tfidf, y)
 
     def predict(self, message):
-
         vector = self.vectorizer.transform([message])
 
-        return self.model.predict(vector)[0]
+        probabilities = self.model.predict_proba(vector)[0]
+        predicted_index = probabilities.argmax()
+
+        return {
+            "intent": self.model.classes_[predicted_index],
+            "confidence": float(probabilities[predicted_index]),
+        }
 
 
 def main():

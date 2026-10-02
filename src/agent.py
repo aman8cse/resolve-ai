@@ -27,7 +27,10 @@ class SupportAgent:
 
         classifier_start = time.perf_counter()
 
-        intent = self.classifier.predict(message)
+        classification = self.classifier.predict(message)
+
+        intent = classification["intent"]
+        intent_confidence = classification["confidence"]
 
         classifier_latency = time.perf_counter() - classifier_start
 
@@ -64,6 +67,7 @@ class SupportAgent:
         return {
             "message": message,
             "intent": intent,
+            "intent_confidence": intent_confidence,
             "cases": cases,
             "reply": reply,
             "decision": decision["decision"],
