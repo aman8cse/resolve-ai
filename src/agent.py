@@ -2,6 +2,7 @@ import time
 
 from src.models.train_classifier import IntentClassifier
 from src.retrieval.faiss_retriever import FAISSRetriever
+from src.retrieval.qdrant_retriever import QdrantRetriever
 from src.generation.response_generator import ResponseGenerator
 from src.decision.escalation import EscalationDecision
 
@@ -13,7 +14,7 @@ class SupportAgent:
         self.classifier = IntentClassifier()
 
         print("Loading historical retriever...")
-        self.retriever = FAISSRetriever()
+        self.retriever = QdrantRetriever()
 
         print("Loading response generator...")
         self.generator = ResponseGenerator()
